@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cells:
   - {x: 0, y: 0, z: 0}
-  <Sprite>k__BackingField: {fileID: 21300000, guid: 5b93a1ada14be5a4692c086800563e1f, type: 3}
+  <Sprite>k__BackingField: {fileID: 21300000, guid: 795cb0c7f364fb849a065e170c1f8477, type: 3}
