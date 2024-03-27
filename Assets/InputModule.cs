@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿public class InputModule : ModuleData
+{
 
-[CreateAssetMenu(menuName = "BoardObject/InputModule")]
-public class InputModule : BoardObjectData{}
+}

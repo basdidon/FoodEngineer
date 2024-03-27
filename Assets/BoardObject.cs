@@ -33,6 +33,18 @@ public class BoardObject : MonoBehaviour
         SpriteRenderer.sprite = BoardObjectData.Sprite;
     }
 
+    public static GameObject CreateBoardObject(BoardController boardController, BoardObjectData data, Vector3Int gridPosition)
+    {
+        GameObject gameObject = new();
+        gameObject.transform.parent = boardController.transform;
+
+        BoardObject boardObject = gameObject.AddComponent<BoardObject>();
+
+        boardObject.Initialize(boardController,data,gridPosition);
+
+        return gameObject;
+    }
+
     void OnSetGridPosition()
     {
         transform.position = BoardController.Grid.GetCellCenterWorld(GridPosition);
