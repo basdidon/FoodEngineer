@@ -30,6 +30,7 @@ public abstract class UnitySerializedDictionary<TKey, TValue> : Dictionary<TKey,
 		}
 	}
 }
+
 /*
 [Serializable]
 public class FaceTexturesDictionary : UnitySerializedDictionary<MapDiceTexture.Faces, Texture2D> { }*/

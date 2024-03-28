@@ -1,0 +1,3 @@
+VisualElement #add-item-container{
+	background-color : #fff;
+}

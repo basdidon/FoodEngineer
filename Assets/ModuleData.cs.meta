@@ -1,10 +1,9 @@
 fileFormatVersion: 2
-guid: 74c931139c2d5e345be13f8254af8a68
+guid: 38f5db85dc7536541bd21ec6c4993254
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - <Sprite>k__BackingField: {fileID: 21300000, guid: 12cc52e6411cffe438f80c6107e659f6, type: 3}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
