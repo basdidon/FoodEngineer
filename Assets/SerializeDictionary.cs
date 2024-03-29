@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,12 +24,7 @@ public abstract class SerializeDictionary<TKey,TValue> : IDictionary<TKey,TValue
     List<SerializeDictionaryItem> items;
 
     [SerializeField]
-    SerializeDictionaryItem itemToAdd;
-
-    [SerializeField]
-    TKey keyToAdd;
-    [SerializeField]
-    TValue valueToAdd;
+    protected SerializeDictionaryItem itemToAdd;
 
     public ICollection<TKey> Keys => items.Select(item => item.Key).ToArray();
     public ICollection<TValue> Values => items.Select(item => item.Value).ToArray();
@@ -36,7 +32,16 @@ public abstract class SerializeDictionary<TKey,TValue> : IDictionary<TKey,TValue
     public int Count => items.Count;
     public bool IsReadOnly => true;
 
-    public TValue this[TKey key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public TValue this[TKey key] {
+        get
+        {
+            if (TryGetValue(key,out TValue value))  
+                return value;
+
+            throw new KeyNotFoundException();
+        } 
+        set => throw new NotImplementedException();
+    }
 
     public SerializeDictionary(){}
 
@@ -65,13 +70,14 @@ public abstract class SerializeDictionary<TKey,TValue> : IDictionary<TKey,TValue
 
     public bool TryGetValue(TKey key, out TValue value)
     {
-        if (!ContainsKey(key))
+        var item = items.FirstOrDefault(i => Equals(i.Key, key));
+        if (item == null)
         {
             value = default;
             return false;
         }
 
-        value = this[key];
+        value = item.Value;
         return true;
     }
 
@@ -95,19 +101,20 @@ public class SerializeDictionaryPropertyDrawer : PropertyDrawer
 
     public override VisualElement CreatePropertyGUI(SerializedProperty property)
     {
-        StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/Resources/Editor/Styles/SerializeDictionaryStyle.uss");
         VisualElement container = new();
 
+        StyleSheet styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>("Assets/Resources/Editor/Styles/SerializeDictionaryStyle.uss");
         container.styleSheets.Add(styleSheet);
 
         var arrayProperty = property.FindPropertyRelative("items");
 
+        Foldout foldout = new() { text = $"{property.propertyPath}"};
+        container.Add(foldout);
 
         items = new();
         for (int i = 0;i< arrayProperty.arraySize; i++)
         {
             items.Add(i);
-            Debug.Log(i);
         }
 
         Column keyColumn = new() { 
@@ -172,42 +179,69 @@ public class SerializeDictionaryPropertyDrawer : PropertyDrawer
         listView.BindProperty(property.FindPropertyRelative("items"));
         listView.Rebuild();
 
-        container.Add(listView);
+        foldout.Add(listView);
 
-        VisualElement addItemContainer = new();
-        addItemContainer.name = "add-item-container";
-        float borderWidth = .5f;
-        addItemContainer.style.borderBottomWidth = borderWidth;
-        addItemContainer.style.borderTopWidth = borderWidth;
-        addItemContainer.style.borderLeftWidth = borderWidth;
-        addItemContainer.style.borderRightWidth = borderWidth;
-        Color borderColor = Color.cyan;
-        addItemContainer.style.borderBottomColor = borderColor;
-        addItemContainer.style.borderTopColor = borderColor;
-        addItemContainer.style.borderRightColor = borderColor;
-        addItemContainer.style.borderLeftColor = borderColor;
-        container.Add(addItemContainer);
+        VisualElement addItemContainer = new(){
+            name = "add-item-container"
+        };
+        foldout.Add(addItemContainer);
 
-        VisualElement addItemFieldContainer = new();
-        addItemFieldContainer.style.flexDirection = FlexDirection.Row;
-        addItemContainer.Add(addItemFieldContainer);
+        VisualElement addItemFieldsContainer = new() {
+            name = "add-item-fields-container"
+        };
+        addItemContainer.Add(addItemFieldsContainer);
 
         SerializedProperty itemToAddSP = property.FindPropertyRelative("itemToAdd");
-        PropertyField keyPropertyField = new(itemToAddSP.FindPropertyRelative("<Key>k__BackingField"),string.Empty);
-        keyPropertyField.style.flexGrow = 1;
-        keyPropertyField.style.minWidth = new(120);
-        addItemFieldContainer.Add(keyPropertyField);
 
-        PropertyField valuePropertyField = new(itemToAddSP.FindPropertyRelative("<Value>k__BackingField"),string.Empty);
-        valuePropertyField.style.flexGrow = 1;
-        valuePropertyField.style.minWidth = new(180);
-        addItemFieldContainer.Add(valuePropertyField);
+        SerializedProperty itemKeyToAddSP = itemToAddSP.FindPropertyRelative("<Key>k__BackingField");
+        PropertyField keyPropertyField = new(itemKeyToAddSP, string.Empty) {
+            name = "item-to-add-key-field"
+        };
+        addItemFieldsContainer.Add(keyPropertyField);
 
-        Button addItemButton = new() { text = "Add"};
+        SerializedProperty itemValueToAddSP = itemToAddSP.FindPropertyRelative("<Value>k__BackingField");
+        PropertyField valuePropertyField = new(itemValueToAddSP, string.Empty) { 
+            name = "item-to-add-value-field" 
+        };
+        addItemFieldsContainer.Add(valuePropertyField);
+
+        Button addItemButton = new() { 
+            name ="add-item-btn", 
+            text = "Add"
+        };
+        addItemButton.AddToClassList("add-item-btn");
         addItemContainer.Add(addItemButton);
+
+        addItemButton.clicked += () => OnAddButtonClicked(property);
 
         return container;
     }
 
+    void OnAddButtonClicked(SerializedProperty property)
+    {
+        var targetObject = property.serializedObject.targetObject;
+        FieldInfo dictFieldInfo = targetObject.GetType().GetField(property.propertyPath, BindingFlags.Instance | BindingFlags.NonPublic);
+        if (dictFieldInfo == null)
+            throw new Exception($"can't find field {targetObject.GetType()}.{property.propertyPath}");
+            
+        var dictObject = dictFieldInfo.GetValue(targetObject);
 
+        var itemToAddFieldInfo = dictFieldInfo.FieldType.GetField("itemToAdd", BindingFlags.Instance | BindingFlags.NonPublic);
+        var itemToAddObject = itemToAddFieldInfo.GetValue(dictObject);
+
+        var keyInfo = itemToAddFieldInfo.FieldType.GetProperty("Key");
+        var valueInfo = itemToAddFieldInfo.FieldType.GetProperty("Value");
+        Type[] addMethodParamsType = new Type[] { keyInfo.PropertyType, valueInfo.PropertyType };
+
+        // values
+        var keyObject = keyInfo.GetValue(itemToAddObject);
+        var valueObject = valueInfo.GetValue(itemToAddObject);
+
+        var addMethod = dictFieldInfo.FieldType.GetMethod("Add", addMethodParamsType);
+        if (addMethod != null)
+        {
+            addMethod.Invoke(dictObject, new[] { keyObject, valueObject });
+            Debug.Log("found");
+        }
+    }
 }

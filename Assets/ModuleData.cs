@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Linq;
 
 [CreateAssetMenu(menuName = "Module")]
 public class ModuleData : ScriptableObject
@@ -9,10 +10,10 @@ public class ModuleData : ScriptableObject
     [field: SerializeField]
     public Sprite Sprite { get; private set; }
 
-    public Vector3Int[] GetRotetedCells(CircuitModule.ModuleRotate rotate)
+    public Vector3Int[] GetRotetedCells(CircuitModule.ModuleRotate rotate, Vector3Int worldPos)
     {
         // do rotate here
-        
-        return LocalCells;
+
+        return LocalCells.Select(localCell=> localCell + worldPos).ToArray();
     }
 }

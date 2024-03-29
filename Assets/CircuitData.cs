@@ -25,32 +25,64 @@ public class CircuitModule
     }
 
     [SerializeField] Vector3Int m_pivot;
-    public Vector3Int Pivot { get; }
     [SerializeField] ModuleTypes m_moduleType;
-    public ModuleTypes ModuleType { get; }
     [SerializeField] ModuleRotate m_rotate;
-    public ModuleRotate Rotate { get; }
 
-    public Vector3Int[] GetCells()
+    public Vector3Int Pivot { get => m_pivot; set => m_pivot = value; }
+    public ModuleTypes ModuleType { get => m_moduleType; set => m_moduleType = value; }
+    public ModuleRotate Rotate { get => m_rotate; set => m_rotate = value; }
+
+    public CircuitModule(Vector3Int pivot, ModuleTypes moduleType, ModuleRotate rotate)
     {
-        throw new NotImplementedException();
+        Pivot = pivot;
+        ModuleType = moduleType;
+        Rotate = rotate;
     }
 }
-
-
 
 [Serializable]
 public class ModuleDictionary : SerializeDictionary<ModuleTypes, ModuleData> { }
 
-[CreateAssetMenu(fileName = "Circuit",menuName = "Circuit")]
+[CreateAssetMenu(fileName = "Circuit", menuName = "Circuit")]
 public class CircuitData : ScriptableObject
 {
+    [field: SerializeField]
+    public BoundsInt Bounds { get; private set; }
+    [SerializeField] ModuleDictionary modules= new();
     [SerializeField] List<CircuitModule> circuitModules;
-    [SerializeField] ModuleDictionary modules = new();
 
-    public bool IsOverlap(Vector3Int[] cells) => throw new NotImplementedException();
-    // circuitModules.Any(circuitModule => GetDataByModuleType(circuitModule.ModuleType).GetRotetedCells(circuitModule.Rotate));
-    //modules.Any(module => module.LocalCells.Any(moduleCell => cells.Contains(moduleCell)));
+    public Vector3Int[] GetCellsOf(CircuitModule circuitModule)
+        => GetDataByModuleType(circuitModule.ModuleType).GetRotetedCells(circuitModule.Rotate, circuitModule.Pivot);
+    
+    public bool IsOverlapWith(Vector3Int[] cells, CircuitModule circuitModule)
+        => GetCellsOf(circuitModule).Any(moduleCell => cells.Any(cell => cell == moduleCell));
+
+    public bool IsOverlap(CircuitModule circuitModule) => IsOverlap(GetCellsOf(circuitModule));
+    public bool IsOverlap(Vector3Int[] cells)
+        => circuitModules.Any(module=> IsOverlapWith(cells,module));
+
+    public bool IsOutOfBound(CircuitModule circuitModule) => IsOutOfBound(GetCellsOf(circuitModule));
+    public bool IsOutOfBound(Vector3Int[] cells)
+        => cells.Any(cell => !Bounds.Contains(cell));
+
+    public void AddCircuitModule(Vector3Int pivot,ModuleTypes moduleType,CircuitModule.ModuleRotate moduleRotate = CircuitModule.ModuleRotate.Rotate_0)
+    {
+        CircuitModule moduleToAdd = new(pivot, moduleType, moduleRotate);
+
+        if (IsOverlap(moduleToAdd))
+        {
+            Debug.LogWarning("can't add new CircuitModule : <color=yellow>Overlap</color> with exitsing CircuitModule.");
+        }
+        else if (IsOutOfBound(moduleToAdd))
+        {
+            Debug.LogWarning("can't add new CircuitModule : <color=yellow>Out Of Bound</color>.");
+        }
+        else
+        {
+            circuitModules.Add(moduleToAdd);
+        }
+    }
+
     public ModuleData GetDataByModuleType(ModuleTypes moduleType)
     {
         return modules[moduleType];
@@ -81,6 +113,7 @@ public class CircuitDataEditor : Editor
             if(typeSelectField.value is ModuleTypes moduleType)
             {
                 // create 
+                (target as CircuitData).AddCircuitModule(createPositionField.value, Enum.Parse<ModuleTypes>(typeSelectField.value.ToString()));
             }
         };
         moduleCreateElement.Add(createModuleButton);

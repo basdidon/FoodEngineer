@@ -12,8 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edb5572a5fc71e14d9a9770b1bbb8a93, type: 3}
   m_Name: Circuit
   m_EditorClassIdentifier: 
-  circuitModules: []
-  pairs:
+  <Bounds>k__BackingField:
+    m_Position: {x: 0, y: 0, z: 0}
+    m_Size: {x: 10, y: 10, z: 1}
+  modules:
     items:
     - <Key>k__BackingField: 0
-      <Value>k__BackingField: {fileID: 0}
+      <Value>k__BackingField: {fileID: 11400000, guid: 00bed556607b8c043b0f87a22c99e65a, type: 2}
+    itemToAdd:
+      <Key>k__BackingField: 0
+      <Value>k__BackingField: {fileID: 11400000, guid: 00bed556607b8c043b0f87a22c99e65a, type: 2}
+  circuitModules:
+  - m_pivot: {x: 0, y: 0, z: 0}
+    m_moduleType: 0
+    m_rotate: 0
