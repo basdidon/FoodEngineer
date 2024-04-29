@@ -1,19 +1,12 @@
-﻿using UnityEngine;
-using System.Linq;
+using System.Collections.Generic;
+using UnityEngine;
 
-[CreateAssetMenu(menuName = "Module")]
+[CreateAssetMenu(menuName = "Circuit/Module")]
 public class ModuleData : ScriptableObject
 {
     [field: SerializeField]
-    public Vector3Int[] LocalCells { get; private set; } = new Vector3Int[] { Vector3Int.zero };
-
-    [field: SerializeField]
     public Sprite Sprite { get; private set; }
 
-    public Vector3Int[] GetRotetedCells(CircuitModule.ModuleRotate rotate, Vector3Int worldPos)
-    {
-        // do rotate here
-
-        return LocalCells.Select(localCell=> localCell + worldPos).ToArray();
-    }
+    [SerializeField] List<Vector3Int> localCells = new() { Vector3Int.zero};
+    public IReadOnlyList<Vector3Int> LocalCells => localCells;
 }

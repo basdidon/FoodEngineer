@@ -229,7 +229,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 3
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -351,8 +351,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1524418228}
-  - component: {fileID: 1524418227}
   - component: {fileID: 1524418229}
+  - component: {fileID: 1524418227}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -396,16 +396,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1524418226}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c118d5d9a3ab6d041a470f264c2615d9, type: 3}
+  m_Script: {fileID: 11500000, guid: fd3ca64b14e567c499554e02cffc6d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardObjectPrefab: {fileID: 7711152810465490239, guid: 829ed1d4f63ac994abd3dde5f7c71b96, type: 3}
-  size: {x: 10, y: 10}
-  Sprite: {fileID: 21300000, guid: 49a63bc4cd70c2b448e58f889fd085f3, type: 3}
-  <BoardObjects>k__BackingField: []
-  Dict:
-    keyData: 
-    valueData: []
+  itemPrefab: {fileID: 37647666450043164, guid: bd077fe4d01296d468b6e3f77bbb670c, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
